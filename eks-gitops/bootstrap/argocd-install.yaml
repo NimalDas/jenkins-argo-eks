@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: argocd
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://argoproj.github.io/argo-helm
+    chart: argo-cd
+    targetRevision: 6.0.1
+    helm:
+      values: |
+        server:
+          ingress:
+            enabled: false
+        configs:
+          secret:
+            argocdServerAdminPassword: "$2b$12$1lneZlI/SwIPZ2apaEhUd.MFm3m8HGY6KQjWxki2dbdSJBlmrILYa" # hashed password
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
