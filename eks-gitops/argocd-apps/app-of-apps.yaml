@@ -11,3 +11,6 @@ spec:
     repoURL: https://github.com/NimalDas/jenkins-argo-eks.git
     targetRevision: HEAD
   project: default
+  syncPolicy:
+    automated:
+      enabled: true
