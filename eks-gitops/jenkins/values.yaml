@@ -1,0 +1,36 @@
+controller:
+  replicaCount: 1
+  image:
+    tag: "2.462"
+  service:
+    type: ClusterIP
+    port: 8080
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /
+    paths:
+    - /jenkins
+    pathType: Prefix
+    hosts:
+    - jenkins.local
+  admin:
+    user: admin
+    password: "Liverp00l" # Replace with a secure password
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "512Mi"
+    limits:
+      cpu: "1000m"
+      memory: "1024Mi"
+  persistence:
+    enabled: true
+    storageClass: "gp2"
+    size: 8Gi
+  installPlugins:
+    - kubernetes:1.33.0
+    - git:5.2.1
+    - pipeline-stage-view:2.33
+    - blueocean:1.27.11
