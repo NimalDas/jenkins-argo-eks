@@ -8,13 +8,13 @@ spec:
   sources:
   - repoURL: git@github.com:NimalDas/jenkins-argo-eks.git
     targetRevision: main
-    path: eks-gitops/ingress
-    helm:
-      valueFiles:
-      - values.yaml
+    ref: values
   - repoURL: https://kubernetes.github.io/ingress-nginx
     chart: ingress-nginx
     targetRevision: 4.12.1 # Specify a desired chart version
+    helm:
+      valueFiles:
+      - $values/eks-gitops/ingress/values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: ingress-nginx
