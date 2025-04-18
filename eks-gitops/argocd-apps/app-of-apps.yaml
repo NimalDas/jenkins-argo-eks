@@ -9,7 +9,7 @@ spec:
   source:
     path: eks-gitops/argocd-apps
     repoURL: https://github.com/NimalDas/jenkins-argo-eks.git
-    targetRevision: HEAD
+    targetRevision: main
   project: default
   # syncPolicy:
   #   automated:
