@@ -7,7 +7,7 @@ spec:
     name: in-cluster
     namespace: argocd
   source:
-    path: eks-gitops/argocd-apps
+    path: eks-gitops/argocd-apps/apps
     repoURL: https://github.com/NimalDas/jenkins-argo-eks.git
     targetRevision: main
   project: default
