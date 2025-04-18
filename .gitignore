@@ -14,6 +14,7 @@ override.tf.json
 .argocd-source # If you have local Argo CD source definitions
 .argocd-env # If you have environment-specific Argo CD configurations
 .\eks-gitops\argocd-bootstrap\repo-secret.yaml
+eks-gitops/argocd-bootstrap/repo-secret.yaml
 
 # Helm-specific
 charts/*/Chart.lock
