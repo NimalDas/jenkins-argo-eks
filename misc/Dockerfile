@@ -17,9 +17,9 @@ RUN apt-get update && apt-get install -y \
 RUN node --version && npm --version
 
 # Optional: Configure storage for rootless Podman
-# RUN mkdir -p /home/jenkins/.config/containers /home/jenkins/.local/share/containers \
-#     && chown -R jenkins:jenkins /home/jenkins/.config /home/jenkins/.local
-# ENV CONTAINERS_REGISTRIES_CONF="/home/jenkins/.config/containers/registries.conf"
+RUN mkdir -p /home/jenkins/.config/containers /home/jenkins/.local/share/containers \
+    && chown -R jenkins:jenkins /home/jenkins/.config /home/jenkins/.local
+ENV CONTAINERS_REGISTRIES_CONF="/home/jenkins/.config/containers/registries.conf"
 
 # Switch back to the default 'jenkins' user
 USER jenkins

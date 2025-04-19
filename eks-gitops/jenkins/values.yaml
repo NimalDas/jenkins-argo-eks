@@ -35,4 +35,4 @@ agent:
   serviceAccount: jenkins
   image:
     repository: "965202785849.dkr.ecr.us-east-1.amazonaws.com/jenkins-agents"
-    tag: "1.0.0-podman-npm"   
+    tag: "1.0.1-podman-npm"   
