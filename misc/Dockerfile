@@ -18,6 +18,11 @@ RUN apt-get update && apt-get install -y \
 # RUN echo "jenkins:100000:65536" >> /etc/subuid \
 #     && echo "jenkins:100000:65536" >> /etc/subgid
 
+# Configure jenkins user for passwordless sudo for podman commands
+RUN usermod -aG sudo jenkins \
+    && echo "jenkins ALL=(ALL) NOPASSWD: /usr/bin/podman" >> /etc/sudoers.d/jenkins \
+    && chmod 0440 /etc/sudoers.d/jenkins
+    
 # Verify Node.js and npm installation
 RUN node --version && npm --version
 
