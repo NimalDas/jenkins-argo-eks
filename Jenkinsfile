@@ -33,7 +33,7 @@ pipeline {
         }
         stage('Build Node.js App') {
             steps {
-                dir('nodejs-app') {
+                dir('eks-gitops/nodejs-app') {
                     sh '''
                         npm install --production
                         npm run start & sleep 5 && curl -f http://localhost:3000 || exit 1
@@ -44,7 +44,7 @@ pipeline {
         }
         stage('Build Docker Image with Podman') {
             steps {
-                dir('nodejs-app') {
+                dir('eks-gitops/nodejs-app') {
                     sh 'podman build -t ${ECR_REGISTRY}:${VERSION} .'
                 }
             }
@@ -63,7 +63,7 @@ pipeline {
         }
         stage('Update Manifest') {
             steps {
-                dir('nodejs-app/k8s') {
+                dir('eks-gitops/nodejs-app/k8s') {
                     sshagent([env.GIT_CREDENTIAL_ID]) {
                         sh """
                             git remote set-url origin ${env.REPO_SSH_URL}
