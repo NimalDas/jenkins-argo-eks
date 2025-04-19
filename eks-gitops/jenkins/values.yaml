@@ -30,3 +30,9 @@ controller:
   installPlugins:
     - pipeline-stage-view:2.37
     - ssh-agent:latest
+
+agent:
+  serviceAccount: jenkins
+  image:
+    repository: "965202785849.dkr.ecr.us-east-1.amazonaws.com/jenkins-agents"
+    tag: "latest"   

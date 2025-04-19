@@ -35,6 +35,43 @@ resource "aws_ecr_lifecycle_policy" "nodejs_app_policy" {
   })
 }
 
+# ECR Repository for Jenkins Agent Images
+resource "aws_ecr_repository" "jenkins_agents" {
+  name                 = "jenkins-agents"
+  image_tag_mutability = "MUTABLE" # Or IMMUTABLE if you prefer
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  tags = {
+    Environment = "dev"
+    Terraform   = "true"
+    ManagedBy   = "Jenkins" # Optional: tag to indicate purpose
+  }
+}
+
+# Optional: Lifecycle Policy for Jenkins Agents ECR (e.g., keep last few images)
+resource "aws_ecr_lifecycle_policy" "jenkins_agents_policy" {
+  repository = aws_ecr_repository.jenkins_agents.name
+
+  policy = jsonencode({
+    rules = [
+      {
+        rulePriority = 1
+        description  = "Keep last 5 images for Jenkins Agents"
+        selection = {
+          tagStatus  = "any"
+          countType  = "imageCountMoreThan"
+          countNumber = 5 # Adjust as needed
+        }
+        action = {
+          type = "expire"
+        }
+      }
+    ]
+  })
+}
 
 # --- IAM Policy for Jenkins ECR Access ---
 resource "aws_iam_policy" "jenkins_ecr_policy" {
@@ -60,9 +97,10 @@ resource "aws_iam_policy" "jenkins_ecr_policy" {
           "ecr:ListImages",
           "ecr:CreateRepository" # Optional: Allows Jenkins to create the ECR repo if it doesn't exist
         ],
-        # Scope permissions to your specific Node.js ECR repository ARN
-        # Ensure aws_ecr_repository.nodejs_app resource exists
-        Resource = aws_ecr_repository.nodejs_app.arn
+        Resource = [
+          aws_ecr_repository.nodejs_app.arn,
+          aws_ecr_repository.jenkins_agents.arn
+        ]
       },
       {
         Effect = "Allow",
