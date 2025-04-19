@@ -10,16 +10,16 @@ pipeline {
 
     stages {
         // --- New Stage to Add GitHub Host Key ---
-        stage('Add GitHub Host Key') {
-            steps {
-                echo "Adding github.com host key to known_hosts..."
-                // Ensure the .ssh directory exists
-                sh 'mkdir -p ~/.ssh'
-                // Scan for github.com host key and add it to known_hosts
-                sh 'ssh-keyscan github.com >> ~/.ssh/known_hosts'
-                sh 'echo "github.com host key added."'
-            }
-        }
+        // stage('Add GitHub Host Key') {
+        //     steps {
+        //         echo "Adding github.com host key to known_hosts..."
+        //         // Ensure the .ssh directory exists
+        //         sh 'mkdir -p ~/.ssh'
+        //         // Scan for github.com host key and add it to known_hosts
+        //         sh 'ssh-keyscan github.com >> ~/.ssh/known_hosts'
+        //         sh 'echo "github.com host key added."'
+        //     }
+        // }
         // --- End New Stage ---
 
         stage('Checkout Repository') {
