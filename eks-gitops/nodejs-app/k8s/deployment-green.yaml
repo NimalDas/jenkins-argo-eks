@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodejs-app-green
+  namespace: nodejs-app
+  labels:
+    app: nodejs-app
+    version: green
+spec:
+  replicas: 0 # Green starts with 0 replicas
+  selector:
+    matchLabels:
+      app: nodejs-app
+      version: green
+  template:
+    metadata:
+      labels:
+        app: nodejs-app
+        version: green
+    spec:
+      containers:
+      - name: nodejs-app
+        image: <your-ecr-repo>:v2 # Replace with your ECR repo
+        ports:
+        - containerPort: 3000

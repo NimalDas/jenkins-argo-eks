@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodejs-app-blue
+  namespace: nodejs-app
+  labels:
+    app: nodejs-app
+    version: blue
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nodejs-app
+      version: blue
+  template:
+    metadata:
+      labels:
+        app: nodejs-app
+        version: blue
+    spec:
+      containers:
+      - name: nodejs-app
+        image: <your-ecr-repo>:v1 # Replace with your ECR repo
+        ports:
+        - containerPort: 3000
