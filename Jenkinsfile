@@ -27,8 +27,8 @@ pipeline {
                     sh 'echo "Pipeline build number: ${BUILD_NUMBER}" >> test-pipeline-status.txt'
 
                     // Configure Git identity for the commit
-                    // sh 'git config user.email "jenkins@nimaldas.com"' // Replace with a suitable email
-                    // sh 'git config user.name "Jenkins Pipeline Test"'
+                    sh 'git config user.email "jenkins@nimaldas.com"' // Replace with a suitable email
+                    sh 'git config user.name "NimalDas"'
 
                     // Add the file to staging
                     sh 'git add test-pipeline-status.txt'
