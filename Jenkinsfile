@@ -36,8 +36,10 @@ pipeline {
                 dir('eks-gitops/nodejs-app') {
                     sh '''
                         npm install --production
-                        npm run start & sleep 5 && curl -f http://localhost:3000 || exit 1
-                        pkill node
+                        npm run start & 
+                        NODE_PID=$!
+                        sleep 5 && curl -f http://localhost:3000 || exit 1
+                        kill $NODE_PID
                     '''
                 }
             }
