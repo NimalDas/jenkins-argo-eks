@@ -47,8 +47,7 @@ pipeline {
         stage('Build Docker Image with Podman') {
             steps {
                 dir('eks-gitops/nodejs-app') {
-                    sh 'sudo -i'
-                    sh 'podman build -t ${ECR_REGISTRY}:${VERSION} .'
+                    sh 'sudo podman build -t ${ECR_REGISTRY}:${VERSION} .'
                 }
             }
         }
@@ -57,10 +56,9 @@ pipeline {
                 withCredentials([aws(credentialsId: 'aws-credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
                     sh '''
                      #   aws ecr get-login-password --region ${AWS_REGION} | podman login --username AWS --password-stdin ${ECR_REGISTRY}
-                        sudo -i
-                        podman tag ${ECR_REGISTRY}:${VERSION} ${ECR_REGISTRY}:latest
-                        podman push ${ECR_REGISTRY}:${VERSION}
-                        podman push ${ECR_REGISTRY}:latest
+                        sudo podman tag ${ECR_REGISTRY}:${VERSION} ${ECR_REGISTRY}:latest
+                        sudo podman push ${ECR_REGISTRY}:${VERSION}
+                        sudo podman push ${ECR_REGISTRY}:latest
                     '''
                 }
             }
