@@ -4,15 +4,15 @@ controller:
     type: ClusterIP
     port: 8080
   ingress:
-    enabled: true
-    ingressClassName: nginx
-    annotations:
-      nginx.ingress.kubernetes.io/rewrite-target: /
-    paths:
-    - /jenkins
-    pathType: Prefix
-    hosts:
-    - jenkins.local
+    enabled: false
+    # ingressClassName: nginx
+    # annotations:
+    #   nginx.ingress.kubernetes.io/rewrite-target: /
+    # paths:
+    # - /jenkins
+    # pathType: Prefix
+    # hosts:
+    # - jenkins.local
   admin:
     user: admin
     password: "Liverp00l" # Replace with a secure password
