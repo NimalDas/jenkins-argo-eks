@@ -100,14 +100,17 @@ resource "aws_iam_role" "ebs_csi_driver" {
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
           StringEquals = {
-            "${module.eks.cluster_oidc_issuer_url}:aud" = "system:serviceaccount:kube-system:ebs-csi-controller-sa"
-            "${module.eks.cluster_oidc_issuer_url}:sub" = "system:serviceaccount:kube-system:ebs-csi-controller-sa"
+            "oidc.eks.us-east-1.amazonaws.com/id/CE978958C96F68B03C8F9415E43F068F:aud": "sts.amazonaws.com",
+            "oidc.eks.us-east-1.amazonaws.com/id/CE978958C96F68B03C8F9415E43F068F:sub": "system:serviceaccount:kube-system:ebs-csi-controller-sa"
           }
         }
       }
     ]
   })
 }
+
+# "${module.eks.cluster_oidc_issuer_url}:aud" = "sts.amazonaws.com"
+# "${module.eks.cluster_oidc_issuer_url}:sub" = "system:serviceaccount:kube-system:ebs-csi-controller-sa"
 
 resource "aws_iam_role_policy_attachment" "ebs_csi_driver_policy" {
   role       = aws_iam_role.ebs_csi_driver.name
