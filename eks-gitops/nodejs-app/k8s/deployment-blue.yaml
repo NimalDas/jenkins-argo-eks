@@ -20,6 +20,6 @@ spec:
     spec:
       containers:
       - name: nodejs-app
-        image: <your-ecr-repo>:v1 # Replace with your ECR repo
+        image: 965202785849.dkr.ecr.us-east-1.amazonaws.com/nodejs-app:v1
         ports:
         - containerPort: 3000
