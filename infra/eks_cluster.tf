@@ -58,8 +58,8 @@ module "eks" {
   eks_managed_node_groups = {
     default = {
       min_size     = 1
-      max_size     = 1
-      desired_size = 1
+      max_size     = 2
+      desired_size = 2
 
       instance_types = ["t3.medium"]
       capacity_type  = "ON_DEMAND"
@@ -100,6 +100,7 @@ resource "aws_iam_role" "ebs_csi_driver" {
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
           StringEquals = {
+            "${module.eks.cluster_oidc_issuer_url}:aud" = "system:serviceaccount:kube-system:ebs-csi-controller-sa"
             "${module.eks.cluster_oidc_issuer_url}:sub" = "system:serviceaccount:kube-system:ebs-csi-controller-sa"
           }
         }
