@@ -1,68 +1,80 @@
-// Jenkinsfile at the root of your jenkins-argo-eks repo
-
 pipeline {
     agent any
-
     environment {
         GIT_CREDENTIAL_ID = "jenkins-argo-eks-repo-creds"
-        REPO_SSH_URL = "git@github.com:NimalDas/jenkins-argo-eks.git" 
+        REPO_SSH_URL = "git@github.com:NimalDas/jenkins-argo-eks.git"
+        AWS_REGION = "us-east-1"
+        ECR_REGISTRY = "965202785849.dkr.ecr.us-east-1.amazonaws.com/nodejs-app"
+        IMAGE_NAME = "nodejs-app"
+        VERSION = "${env.BUILD_NUMBER}"
     }
-
     stages {
         stage('Check for Podman') {
             steps {
                 echo "Checking if podman is available..."
-                sh 'podman --version || echo "Podman not found"' 
+                sh 'podman --version || echo "Podman not found"'
             }
         }
         stage('Add GitHub Host Key') {
             steps {
                 echo "Adding github.com host key to known_hosts..."
-                // Ensure the .ssh directory exists
                 sh 'mkdir -p ~/.ssh'
-                // Scan for github.com host key and add it to known_hosts
                 sh 'ssh-keyscan github.com >> ~/.ssh/known_hosts'
                 sh 'echo "github.com host key added."'
             }
         }
         stage('Checkout Repository') {
             steps {
-                echo "Checking out repository ${env.REPO_SSH_URL} using credential ID ${env.GIT_CREDENTIAL_ID}"
+                echo "Checking out repository ${env.REPO_SSH_URL}"
                 git url: env.REPO_SSH_URL, branch: 'main', credentialsId: env.GIT_CREDENTIAL_ID
-                echo "Checkout complete. Workspace content:"
                 sh 'ls -a'
                 sh 'pwd'
             }
         }
-
-        stage('Add or Update File and Push') {
+        stage('Build Node.js App') {
             steps {
-                echo "Adding or updating a test file and pushing changes..."
-                script {
+                dir('nodejs-app') {
+                    sh '''
+                        npm install --production
+                        npm run start & sleep 5 && curl -f http://localhost:3000 || exit 1
+                        pkill node
+                    '''
+                }
+            }
+        }
+        stage('Build Docker Image with Podman') {
+            steps {
+                dir('nodejs-app') {
+                    sh 'podman build -t ${ECR_REGISTRY}:${VERSION} .'
+                }
+            }
+        }
+        stage('Push to ECR') {
+            steps {
+                withCredentials([aws(credentialsId: 'aws-credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    sh '''
+                     #   aws ecr get-login-password --region ${AWS_REGION} | podman login --username AWS --password-stdin ${ECR_REGISTRY}
+                        podman tag ${ECR_REGISTRY}:${VERSION} ${ECR_REGISTRY}:latest
+                        podman push ${ECR_REGISTRY}:${VERSION}
+                        podman push ${ECR_REGISTRY}:latest
+                    '''
+                }
+            }
+        }
+        stage('Update Manifest') {
+            steps {
+                dir('nodejs-app/k8s') {
                     sshagent([env.GIT_CREDENTIAL_ID]) {
-                        echo "Setting origin remote URL to SSH: ${env.REPO_SSH_URL}"
-                        sh "git remote set-url origin ${env.REPO_SSH_URL}"
-                        sh 'git remote -v'
-
-                        // Create or update a dummy file
-                        sh 'date > test-pipeline-status.txt'
-                        sh 'echo "Pipeline build number: ${BUILD_NUMBER}" >> test-pipeline-status.txt'
-
-                        // Configure Git identity
-                        sh 'git config user.email "jenkins@nimaldas.com"'
-                        sh 'git config user.name "NimalDas"'
-
-                        // Add file
-                        sh 'git add test-pipeline-status.txt'
-
-                        // Commit changes
-                        sh 'git commit -m "Test commit from Jenkins Pipeline Build #${BUILD_NUMBER}"'
-
-                        // Push changes
-                        echo "Pushing changes back to origin..."
-                        sh 'git push origin HEAD'
-
-                        echo "Push complete."
+                        sh """
+                            git remote set-url origin ${env.REPO_SSH_URL}
+                            sed -i 's|image: ${ECR_REGISTRY}:.*|image: ${ECR_REGISTRY}:${VERSION}|' deployment.yaml
+                            sed -i 's|value: \".*\"|value: \"v${VERSION}\"|' deployment.yaml
+                            git config user.email 'jenkins@nimaldas.com'
+                            git config user.name 'NimalDas'
+                            git add deployment.yaml
+                            git commit -m 'Update deployment to version ${VERSION}'
+                            git push origin main
+                        """
                     }
                 }
             }

@@ -1,12 +1,12 @@
 {
-    "name": "nodejs-dummy-app",
+    "name": "nodejs-app",
     "version": "1.0.0",
     "description": "Simple Node.js app for CI/CD demo",
     "main": "server.js",
     "scripts": {
-      "start": "node server.js"
+        "start": "node server.js"
     },
     "dependencies": {
-      "express": "^4.17.1"
+        "express": "^5.1.0"
     }
-  }
+}

@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: nodejs-app
+  name: nodejs-app-preview
   namespace: nodejs-app
 spec:
   selector:
