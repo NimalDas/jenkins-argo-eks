@@ -21,12 +21,16 @@ pipeline {
             steps {
                 echo "Adding or updating a test file and pushing changes..."
                 script {
+                    echo "Setting origin remote URL to SSH..."
+                    sh "git remote set-url origin ${env.REPO_SSH_URL}"
+                    sh 'git remote -v' 
+                    
                     // Create or update a dummy file with a timestamp
                     sh 'date > test-pipeline-status.txt'
                     sh 'echo "Pipeline build number: ${BUILD_NUMBER}" >> test-pipeline-status.txt'
 
                     // Configure Git identity for the commit
-                    sh 'git config user.email "jenkins@your-domain.com"' // Replace with a suitable email
+                    sh 'git config user.email "jenkins@nimaldas.com"' // Replace with a suitable email
                     sh 'git config user.name "Jenkins Pipeline Test"'
 
                     // Add the file to staging
