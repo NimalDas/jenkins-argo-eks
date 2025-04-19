@@ -22,7 +22,7 @@ pipeline {
                 echo "Adding or updating a test file and pushing changes..."
                 script {
                     echo "Setting origin remote URL to SSH..."
-                    sh "git remote set-url origin ${env.REPO_SSH_URL}"
+                    sh "git remote set-url origin ${env.REPO_URL}"
                     sh 'git remote -v' 
                     
                     // Create or update a dummy file with a timestamp
