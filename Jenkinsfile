@@ -5,11 +5,16 @@ pipeline {
 
     environment {
         GIT_CREDENTIAL_ID = "jenkins-argo-eks-repo-creds"
-        REPO_SSH_URL = "git@github.com:NimalDas/jenkins-argo-eks.git" // Your SSH URL
+        REPO_SSH_URL = "git@github.com:NimalDas/jenkins-argo-eks.git" 
     }
 
     stages {
-        // --- New Stage to Add GitHub Host Key ---
+        stage('Check for Podman') {
+            steps {
+                echo "Checking if podman is available..."
+                sh 'podman --version || echo "Podman not found"' 
+            }
+        }
         stage('Add GitHub Host Key') {
             steps {
                 echo "Adding github.com host key to known_hosts..."
@@ -20,8 +25,6 @@ pipeline {
                 sh 'echo "github.com host key added."'
             }
         }
-        // --- End New Stage ---
-
         stage('Checkout Repository') {
             steps {
                 echo "Checking out repository ${env.REPO_SSH_URL} using credential ID ${env.GIT_CREDENTIAL_ID}"
@@ -40,12 +43,6 @@ pipeline {
                         echo "Setting origin remote URL to SSH: ${env.REPO_SSH_URL}"
                         sh "git remote set-url origin ${env.REPO_SSH_URL}"
                         sh 'git remote -v'
-
-                        // --- DEBUGGING STEPS (Optional, but can keep for now) ---
-                        // echo "Testing raw SSH connection to GitHub (verbose):"
-                        // sh 'ssh -v git@github.com'
-                        // echo "--- End of SSH debug ---"
-                        // --- END DEBUGGING STEPS ---
 
                         // Create or update a dummy file
                         sh 'date > test-pipeline-status.txt'
