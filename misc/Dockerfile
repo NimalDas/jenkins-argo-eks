@@ -6,6 +6,7 @@ USER root
 
 # Install Node.js (version 23.x), Podman, procps, and shadow for subuid/subgid
 RUN apt-get update && apt-get install -y \
+    sudo \
     podman \
     curl \
     gnupg \
@@ -14,16 +15,16 @@ RUN apt-get update && apt-get install -y \
     --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
 # Configure subuid and subgid for the jenkins user
-RUN echo "jenkins:100000:65536" >> /etc/subuid \
-    && echo "jenkins:100000:65536" >> /etc/subgid
+# RUN echo "jenkins:100000:65536" >> /etc/subuid \
+#     && echo "jenkins:100000:65536" >> /etc/subgid
 
 # Verify Node.js and npm installation
 RUN node --version && npm --version
 
 # Configure storage for rootless Podman
-RUN mkdir -p /home/jenkins/.config/containers /home/jenkins/.local/share/containers \
-    && chown -R jenkins:jenkins /home/jenkins/.config /home/jenkins/.local
-ENV CONTAINERS_REGISTRIES_CONF="/home/jenkins/.config/containers/registries.conf"
+# RUN mkdir -p /home/jenkins/.config/containers /home/jenkins/.local/share/containers \
+#     && chown -R jenkins:jenkins /home/jenkins/.config /home/jenkins/.local
+# ENV CONTAINERS_REGISTRIES_CONF="/home/jenkins/.config/containers/registries.conf"
 
 # Switch back to the default 'jenkins' user
 USER jenkins
