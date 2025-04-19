@@ -1,7 +1,5 @@
 controller:
   replicaCount: 1
-  image:
-    tag: "2.462"
   service:
     type: ClusterIP
     port: 8080
@@ -30,7 +28,7 @@ controller:
     storageClass: "gp2"
     size: 8Gi
   installPlugins:
-    - kubernetes:1.32.0
+    - kubernetes:1.33.0
     - git:5.2.2
-    - pipeline-stage-view:2.33
-    - blueocean:1.27.11
+    - pipeline-stage-view:2.34
+    - blueocean:1.27.16
