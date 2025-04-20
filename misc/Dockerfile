@@ -8,6 +8,7 @@ USER root
 RUN apt-get update && apt-get install -y \
     sudo \
     podman \
+    awscli \
     curl \
     gnupg \
     && curl -fsSL https://deb.nodesource.com/setup_23.x | bash - \
@@ -22,7 +23,7 @@ RUN apt-get update && apt-get install -y \
 RUN usermod -aG sudo jenkins \
     && echo "jenkins ALL=(ALL) NOPASSWD: /usr/bin/podman" >> /etc/sudoers.d/jenkins \
     && chmod 0440 /etc/sudoers.d/jenkins
-    
+
 # Verify Node.js and npm installation
 RUN node --version && npm --version
 
