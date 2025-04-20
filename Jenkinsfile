@@ -60,7 +60,7 @@ pipeline {
                         sudo podman push ${ECR_REGISTRY}:${VERSION}
                         sudo podman push ${ECR_REGISTRY}:latest
                     '''
-                }
+                // }
             }
         }
         stage('Update Manifest') {
