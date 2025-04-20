@@ -129,8 +129,9 @@ pipeline {
                             sh """
                                 git remote set-url origin ${env.REPO_SSH_URL}
                                 # Update the inactive deployment's image and version
+                                echo ${VERSION}
                                 sed -i "s|image: ${ECR_REGISTRY}:.*|image: ${ECR_REGISTRY}:${VERSION}|" ${newEnvFile}
-                                sed -i "/name: DEPLOYMENT_VERSION/{n;s|value: \"v[^\"]*\"|value: \"v${VERSION}\"|}" ${newEnvFile}
+                                sed -i "s|value: \"v[^\"]*\"|value: \"v${VERSION}\"|" ${newEnvFile}
                                 sed -i "s|value: \"v.*\"|value: \"v${VERSION}\"|" ${newEnvFile}
                                 # Switch service to new environment
                                 sed -i "s|env: .*|env: ${newEnv}|" service.yaml
