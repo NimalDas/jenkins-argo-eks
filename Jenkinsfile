@@ -51,16 +51,38 @@ pipeline {
                 }
             }
         }
+        // stage('Push to ECR') {
+        //     steps {
+        //         // withCredentials([aws(credentialsId: 'aws-credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+        //             sh '''
+        //              #   aws ecr get-login-password --region ${AWS_REGION} | podman login --username AWS --password-stdin ${ECR_REGISTRY}
+        //                 sudo podman tag ${ECR_REGISTRY}:${VERSION} ${ECR_REGISTRY}:latest
+        //                 sudo podman push ${ECR_REGISTRY}:${VERSION}
+        //                 sudo podman push ${ECR_REGISTRY}:latest
+        //             '''
+        //         // }
+        //     }
+        // }
         stage('Push to ECR') {
             steps {
-                // withCredentials([aws(credentialsId: 'aws-credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                    sh '''
-                     #   aws ecr get-login-password --region ${AWS_REGION} | podman login --username AWS --password-stdin ${ECR_REGISTRY}
-                        sudo podman tag ${ECR_REGISTRY}:${VERSION} ${ECR_REGISTRY}:latest
-                        sudo podman push ${ECR_REGISTRY}:${VERSION}
-                        sudo podman push ${ECR_REGISTRY}:latest
-                    '''
-                // }
+                echo "Pushing Node.js container image to ECR using podman and IRSA"
+                script {
+                    // Authenticate podman to ECR using IRSA
+                    sh "aws ecr get-login-password --region ${env.AWS_REGION} | podman login --username AWS --password-stdin ${env.ECR_REGISTRY}"
+                    echo "Podman login to ECR successful using IRSA."
+
+                    // Define the full image name with the tag from the build stage
+                    def fullImageNameWithTag = "${env.ECR_REGISTRY}:${env.VERSION}"
+
+                    // Tag the image for ECR using the full registry path and tag
+                    sh "sudo podman tag ${fullImageNameWithTag} ${env.ECR_REGISTRY}:latest"
+                    sh "sudo podman push ${fullImageNameWithTag}"
+                    echo "Node.js container image pushed to ECR: ${fullImageNameWithTag}"
+
+                    // Push the 'latest' tag
+                    sh "sudo podman push ${env.ECR_REGISTRY}:latest"
+                    echo "'latest' tag pushed to ECR."
+                }
             }
         }
         stage('Update Manifest') {
