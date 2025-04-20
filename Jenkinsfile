@@ -151,4 +151,5 @@ pipeline {
             echo "Pipeline finished."
         }
     }
+    }
 }
