@@ -48,7 +48,7 @@ pipeline {
         stage('Build Docker Image with Podman') {
             steps {
                 dir('eks-gitops/nodejs-app') {
-                    sh 'sudo podman build -t ${ECR_REGISTRY}:${VERSION} .'
+                    sh 'podman build -t ${ECR_REGISTRY}:${VERSION} .'
                 }
             }
         }
@@ -69,19 +69,19 @@ pipeline {
                 echo "Pushing Node.js container image to ECR using podman and IRSA"
                 script {
                     // Authenticate podman to ECR using IRSA
-                    sh "aws ecr get-login-password --region ${env.AWS_REGION} | sudo podman login --username AWS --password-stdin ${env.ECR_REGISTRY}"
+                    sh "aws ecr get-login-password --region ${env.AWS_REGION} | podman login --username AWS --password-stdin ${env.ECR_REGISTRY}"
                     echo "Podman login to ECR successful using IRSA."
 
                     // Define the full image name with the tag from the build stage
                     def fullImageNameWithTag = "${env.ECR_REGISTRY}:${env.VERSION}"
 
                     // Tag the image for ECR using the full registry path and tag
-                    sh "sudo podman tag ${fullImageNameWithTag} ${env.ECR_REGISTRY}:latest"
-                    sh "sudo podman push ${fullImageNameWithTag}"
+                    sh "podman tag ${fullImageNameWithTag} ${env.ECR_REGISTRY}:latest"
+                    sh "podman push ${fullImageNameWithTag}"
                     echo "Node.js container image pushed to ECR: ${fullImageNameWithTag}"
 
                     // Push the 'latest' tag
-                    sh "sudo podman push ${env.ECR_REGISTRY}:latest"
+                    sh "podman push ${env.ECR_REGISTRY}:latest"
                     echo "'latest' tag pushed to ECR."
                 }
             }
