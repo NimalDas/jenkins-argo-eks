@@ -19,12 +19,12 @@ spec:
     spec:
       containers:
       - name: nodejs-app
-        image: 965202785849.dkr.ecr.us-east-1.amazonaws.com/nodejs-app:39
+        image: 965202785849.dkr.ecr.us-east-1.amazonaws.com/nodejs-app:40
         ports:
         - containerPort: 3000
         env:
         - name: DEPLOYMENT_VERSION
-          value: "v39"
+          value: "v40"
         livenessProbe:
           httpGet:
             path: /
