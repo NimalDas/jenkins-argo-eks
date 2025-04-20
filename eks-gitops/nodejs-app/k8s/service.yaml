@@ -6,7 +6,7 @@ metadata:
 spec:
   selector:
     app: nodejs-app
-    env: green
+    env: blue
   ports:
   - protocol: TCP
     port: 80
