@@ -69,7 +69,7 @@ pipeline {
                 echo "Pushing Node.js container image to ECR using podman and IRSA"
                 script {
                     // Authenticate podman to ECR using IRSA
-                    sh "aws ecr get-login-password --region ${env.AWS_REGION} | podman login --username AWS --password-stdin ${env.ECR_REGISTRY}"
+                    sh "sudo aws ecr get-login-password --region ${env.AWS_REGION} | podman login --username AWS --password-stdin ${env.ECR_REGISTRY}"
                     echo "Podman login to ECR successful using IRSA."
 
                     // Define the full image name with the tag from the build stage
