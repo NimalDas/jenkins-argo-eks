@@ -28,6 +28,8 @@ spec:
         env:
         - name: DEPLOYMENT_VERSION
           value: "v2"
+        - name: DEPLOYMENT_ENV
+          value: "test"          
         livenessProbe:
           httpGet:
             path: /
