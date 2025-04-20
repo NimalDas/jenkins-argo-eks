@@ -73,7 +73,7 @@ pipeline {
                             sh "sudo podman push ${fullImageNameWithTag}"
                             echo "Node.js container image pushed to ECR: ${fullImageNameWithTag}"
 
-                            // Push the 'latest' tag (if you created it)
+                            // Push the 'latest' tag 
                             sh "sudo podman push ${env.ECR_REGISTRY}:latest"
                             echo "'latest' tag pushed to ECR."
                         }
