@@ -31,7 +31,7 @@ spec:
         - containerPort: 3000
         env:
         - name: DEPLOYMENT_VERSION
-          value: v1
+          value: v42
         livenessProbe:
           httpGet:
             path: /
