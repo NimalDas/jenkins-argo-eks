@@ -125,18 +125,19 @@ pipeline {
                         script {
                             def activeEnv = sh(script: "cat active-env.txt || echo 'blue'", returnStdout: true).trim()
                             def newEnv = (activeEnv == 'blue') ? 'green' : 'blue'
+                            def newEnvFile = "${newEnv}-deployment.yaml" // Maps newEnv to file name
                             sh """
                                 git remote set-url origin ${env.REPO_SSH_URL}
                                 # Update the inactive deployment's image and version
-                                sed -i "s|image: ${ECR_REGISTRY}:.*|image: ${ECR_REGISTRY}:${VERSION}|" nodejs-app-${newEnv}-deployment.yaml
-                                sed -i "s|value: \"v.*\"|value: \"v${VERSION}\"|" nodejs-app-${newEnv}-deployment.yaml
+                                sed -i "s|image: ${ECR_REGISTRY}:.*|image: ${ECR_REGISTRY}:${VERSION}|" ${newEnvFile}
+                                sed -i "s|value: \"v.*\"|value: \"v${VERSION}\"|" ${newEnvFile}
                                 # Switch service to new environment
                                 sed -i "s|env: .*|env: ${newEnv}|" service.yaml
                                 # Update active environment file
                                 echo ${newEnv} > active-env.txt
                                 git config user.email 'jenkins@nimaldas.com'
                                 git config user.name 'NimalDas'
-                                git add nodejs-app-${newEnv}-deployment.yaml service.yaml active-env.txt
+                                git add ${newEnvFile} service.yaml active-env.txt
                                 git commit -m 'Switch to ${newEnv} deployment with version ${VERSION}'
                                 git push origin main
                             """
@@ -144,9 +145,7 @@ pipeline {
                     }
                 }
             }
-        }        
-        
-    }
+        }
     post {
         always {
             echo "Pipeline finished."
