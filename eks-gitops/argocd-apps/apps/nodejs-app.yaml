@@ -31,7 +31,7 @@ spec:
 
         # Optional: Configure parameters for the blue/green rollout
         # You can add steps for manual approval, delays, etc.
-        # autoPromotionEnabled: false # Set to false for manual promotion in the ArgoCD UI
+        autoPromotionEnabled: false # Set to false for manual promotion in the ArgoCD UI
         # postPromotionHooks: # Example hook after the new version is live
         #   - hook: sync
         #     template:
