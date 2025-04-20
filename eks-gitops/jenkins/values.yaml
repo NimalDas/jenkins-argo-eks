@@ -33,6 +33,7 @@ controller:
 
 agent:
   serviceAccount: jenkins
+  privileged: true
   image:
     repository: "965202785849.dkr.ecr.us-east-1.amazonaws.com/jenkins-agents"
     tag: "1.0.4-podman-npm"   
