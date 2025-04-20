@@ -3,7 +3,8 @@ const app = express();
 const port = 3000;
 
 const version = process.env.DEPLOYMENT_VERSION || 'v1';
-const bgColor = version.startsWith('v1') ? 'blue' : 'green';
+const envColor = process.env.DEPLOYMENT_ENV || 'blue'; // New environment variable
+const bgColor = envColor === 'blue' ? 'blue' : 'green';
 
 app.get('/', (req, res) => {
   res.send(`
@@ -26,12 +27,12 @@ app.get('/', (req, res) => {
       </style>
     </head>
     <body>
-      <h1>Hello, World! ${version} (${bgColor} deployment)</h1>
+      <h1>Hello, World! ${version} (${envColor} deployment)</h1>
     </body>
     </html>
   `);
 });
 
 app.listen(port, () => {
-  console.log(`App running on http://localhost:${port}`);
+  console.log(`App running on http://localhost:${port} in ${envColor} environment`);
 });
