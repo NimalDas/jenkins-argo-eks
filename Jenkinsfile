@@ -13,6 +13,7 @@ pipeline {
             steps {
                 echo "Checking if podman is available..."
                 sh 'podman --version || echo "Podman not found"'
+                sh 'aws --version || echo "awscli not found"'
             }
         }
         stage('Add GitHub Host Key') {
