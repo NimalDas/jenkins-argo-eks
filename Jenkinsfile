@@ -52,18 +52,6 @@ pipeline {
                 }
             }
         }
-        // stage('Push to ECR') {
-        //     steps {
-        //         // withCredentials([aws(credentialsId: 'aws-credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-        //             sh '''
-        //              #   aws ecr get-login-password --region ${AWS_REGION} | podman login --username AWS --password-stdin ${ECR_REGISTRY}
-        //                 sudo podman tag ${ECR_REGISTRY}:${VERSION} ${ECR_REGISTRY}:latest
-        //                 sudo podman push ${ECR_REGISTRY}:${VERSION}
-        //                 sudo podman push ${ECR_REGISTRY}:latest
-        //             '''
-        //         // }
-        //     }
-        // }
         stage('Push to ECR') {
             steps {
                 echo "Pushing Node.js container image to ECR using podman and IRSA"
@@ -86,24 +74,43 @@ pipeline {
                 }
             }
         }
+        // stage('Update Manifest') {
+        //     steps {
+        //         dir('eks-gitops/nodejs-app/k8s') {
+        //             sshagent([env.GIT_CREDENTIAL_ID]) {
+        //                 sh """
+        //                     git remote set-url origin ${env.REPO_SSH_URL}
+        //                     sed -i 's|image: ${ECR_REGISTRY}:.*|image: ${ECR_REGISTRY}:${VERSION}|' deployment.yaml
+        //                     sed -i 's|value: \".*\"|value: \"v${VERSION}\"|' deployment.yaml
+        //                     git config user.email 'jenkins@nimaldas.com'
+        //                     git config user.name 'NimalDas'
+        //                     git add deployment.yaml
+        //                     git commit -m 'Update deployment to version ${VERSION}'
+        //                     git push origin main
+        //                 """
+        //             }
+        //         }
+        //     }
+        // }
         stage('Update Manifest') {
             steps {
                 dir('eks-gitops/nodejs-app/k8s') {
                     sshagent([env.GIT_CREDENTIAL_ID]) {
                         sh """
                             git remote set-url origin ${env.REPO_SSH_URL}
-                            sed -i 's|image: ${ECR_REGISTRY}:.*|image: ${ECR_REGISTRY}:${VERSION}|' deployment.yaml
-                            sed -i 's|value: \".*\"|value: \"v${VERSION}\"|' deployment.yaml
+                            sed -i 's|image: ${env.ECR_REGISTRY}:__IMAGE_TAG__|image: ${env.ECR_REGISTRY}:${env.VERSION}|' deployment.yaml
+                            sed -i "/name: DEPLOYMENT_VERSION/{n;s/value: \".*\"/value: \"v${env.VERSION}\"/}" deployment.yaml
                             git config user.email 'jenkins@nimaldas.com'
                             git config user.name 'NimalDas'
                             git add deployment.yaml
-                            git commit -m 'Update deployment to version ${VERSION}'
+                            git commit -m 'Update deployment to version ${env.VERSION} [ci skip]'
                             git push origin main
                         """
                     }
                 }
             }
         }
+        
     }
     post {
         always {

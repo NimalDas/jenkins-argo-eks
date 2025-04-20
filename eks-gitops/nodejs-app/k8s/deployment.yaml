@@ -6,7 +6,14 @@ metadata:
   labels:
     app: nodejs-app
   annotations:
-    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    # This annotation tells ArgoCD to manage this Deployment with the blue/green strategy
+    argocd.argoproj.io/sync-wave: "1" # Optional: Control the sync order if you have multiple resources
+    # Other potential ArgoCD annotations for blue/green:
+    # argocd.argoproj.io/blue-green-active-service: nodejs-app # Name of the active service (should match service.yaml metadata.name)
+    # argocd.argoproj.io/blue-green-preview-service: # Optional: Name of a preview service
+    # argocd.argoproj.io/blue-green-post-promotion-hook: # Optional: Define a hook after promotion
+    # argocd.argoproj.io/hook-delete-policy: HookSucceeded # Optional: Clean up hook resources
+    # argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   replicas: 2
   selector:
@@ -19,12 +26,12 @@ spec:
     spec:
       containers:
       - name: nodejs-app
-        image: 965202785849.dkr.ecr.us-east-1.amazonaws.com/nodejs-app:40
+        image: 965202785849.dkr.ecr.us-east-1.amazonaws.com/nodejs-app:__IMAGE_TAG__
         ports:
         - containerPort: 3000
         env:
         - name: DEPLOYMENT_VERSION
-          value: "v40"
+          value: "__APP_VERSION__"
         livenessProbe:
           httpGet:
             path: /

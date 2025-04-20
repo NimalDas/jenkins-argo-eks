@@ -1,0 +1,47 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nodejs-app 
+  namespace: argocd 
+spec:
+  project: default 
+
+  source:
+    repoURL: git@github.com:NimalDas/jenkins-argo-eks.git 
+    targetRevision: main       
+    path: eks-gitops/nodejs-app/k8s 
+
+  destination:
+    server: https://kubernetes.default.svc 
+    namespace: nodejs-app                
+
+  syncPolicy:
+    automated:
+      prune: true     
+      selfHeal: true  
+
+    syncOptions:
+      - CreateNamespace=true 
+
+    # --- Configure the Blue/Green Sync Strategy ---
+    strategy:
+      blueGreen:
+        # Specify the Service that exposes your application
+        activeService: nodejs-app # <-- The name of your Service resource (metadata.name in service.yaml)
+
+        # Optional: Configure parameters for the blue/green rollout
+        # You can add steps for manual approval, delays, etc.
+        # autoPromotionEnabled: false # Set to false for manual promotion in the ArgoCD UI
+        # postPromotionHooks: # Example hook after the new version is live
+        #   - hook: sync
+        #     template:
+        #       metadata:
+        #         annotations:
+        #           argocd.argoproj.io/hook-type: post-sync
+        #       spec:
+        #         containers:
+        #           - name: webhook
+        #             image: appropriate/curl
+        #             command: ["curl", "-X", "POST", "https://your-webhook-url/new-version-promoted"]
+
+    # --- End Blue/Green Sync Strategy ---
