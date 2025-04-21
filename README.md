@@ -15,7 +15,6 @@ This project demonstrates a complete Continuous Integration (CI) and Continuous 
     * [Custom Jenkins Agent Image](#54-custom-jenkins-agent-image)
     * [Jenkins Configuration](#55-jenkins-configuration)
     * [ArgoCD Application for Node.js App](#56-argocd-application-for-nodejs-app)
-    * [Kubernetes Namespace](#57-kubernetes-namespace)
 6.  [CI/CD Pipeline (Jenkinsfile)](#6-cicd-pipeline-jenkinsfile)
 7.  [Deployment Strategy (Blue/Green with ArgoCD)](#7-deployment-strategy-bluegreen-with-argocd)
 8.  [How to Run the Demo](#8-how-to-run-the-demo)
