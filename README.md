@@ -125,3 +125,28 @@ aws ecr get-login-password --region <your-region> | docker login --username AWS 
 docker push 965202785849.dkr.ecr.us-east-1.amazonaws.com/jenkins-agents:1.0.0-podman-npm
 Important: Ensure the <your-registry>/jenkins-inbound-podman:<tag> exactly matches the agent.image.repository and agent.image.tag configured in your Jenkins Helm chart values.yaml. Sync ArgoCD for the Jenkins application if you changed the image reference.
 ```
+
+## 6. CI/CD Pipeline (Jenkinsfile)
+
+Your Jenkinsfile orchestrates the CI process:
+
+* **Add GitHub Host Key:** Adds the Git host's SSH key to `known_hosts` for SSH communication.
+* **Checkout Repository:** Clones the Git repository using SSH credentials.
+* **Build Node.js App:** Installs Node.js dependencies and runs a brief local health check.
+* **Build Docker Image with Podman:** Builds the application's Docker image using Podman, tagged with the ECR registry URI and Jenkins build number.
+* **Push to ECR:** Authenticates Podman to ECR using AWS CLI (leveraging IRSA) and pushes the newly built image (both the build-specific tag and `:latest`).
+* **Update Manifest:** This stage implements the Blue/Green toggle logic. It reads `active-env.txt` to find the current active environment (`blue` or `green`). It determines the `newEnv` by toggling. It updates the image tag and `DEPLOYMENT_VERSION` environment variable in the *new environment's deployment file* (`blue-deployment.yaml` or `green-deployment.yaml`). It updates the `service.yaml`'s selector to point to the `newEnv` by changing the `env` label value. It updates `active-env.txt` and commits/pushes these manifest changes back to Git via SSH.
+
+## 7. Deployment Strategy (Blue/Green with ArgoCD)
+
+This setup implements a Blue/Green strategy where:
+
+* You have two separate deployment manifests in Git (`blue-deployment.yaml`, `green-deployment.yaml`).
+* Your `service.yaml` uses a selector (`env: <color>`) to route traffic to either the blue or green deployment.
+* The Jenkins pipeline is responsible for:
+    * Building the new image.
+    * Updating the manifest file for the inactive environment with the new image tag.
+    * Updating the `service.yaml` in Git to change the `env` selector, thereby switching traffic to the newly updated environment.
+* ArgoCD monitors the `eks-gitops/nodejs-app/k8s/` path in Git and automatically applies the changes to the cluster, including the Service selector update.
+* The `active-env.txt` file is a simple mechanism in the Git repository to track which environment is currently active, allowing the pipeline to determine which deployment file to update and which environment to switch to next.
+
