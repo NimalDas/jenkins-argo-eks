@@ -49,18 +49,79 @@ The setup involves the following key components:
 * **Kubernetes Manifests:** Define the desired state of the Node.js application (Deployments for blue/green versions, Service) in YAML files stored in Git.
 * **Terraform:** Used to provision the core AWS infrastructure (VPC, EKS cluster, ECR repositories) and configure IRSA.
 
-```mermaid
-graph LR
-    User[User] --> Git[Git Repository];
-    Git --> Jenkins[Jenkins Pipeline];
-    Jenkins --> Podman[Podman Build];
-    Podman --> ECR[AWS ECR];
-    Jenkins --> Git;
-    Git --> ArgoCD[ArgoCD];
-    ArgoCD --> EKS[AWS EKS Cluster];
-    ECR --> EKS; %% EKS pulls images from ECR
-    EKS --> User; %% User accesses Application via Service/Ingress
-    Jenkins --> EKS; %% Jenkins Agents run in EKS
-    Jenkins --> AWS[AWS (IRSA)]; %% Jenkins agent assumes IAM Role
-    AWS --> ECR; %% Jenkins agent pushes to ECR
-```mermaid
+# Jenkins-Argo-EKS Node.js App Deployment
+
+## 3. Prerequisites
+
+- An AWS account with appropriate permissions to create VPC, EKS, ECR, IAM resources.
+- AWS CLI installed and configured locally.
+- `kubectl` installed and configured to connect to your EKS cluster.
+- `helm` installed.
+- `terraform` installed.
+- `git` installed.
+- `docker` or `podman` installed locally to build and push the custom Jenkins agent image.
+- Node.js and `npm` installed locally to test the Node.js application.
+
+## 4. Repository Structure
+
+Your Git repository is structured to contain the application code, Kubernetes manifests, Terraform code, and `Jenkinsfile`.
+.
+├── Jenkinsfile                     # Jenkins Pipeline definition
+├── terraform/                      # Terraform code for infrastructure
+│   └── ...                         # VPC, EKS, ECRs, IRSA setup
+├── eks-gitops/
+│   └── nodejs-app/
+│       ├── k8s/                    # Kubernetes manifest files for Node.js app
+│       │   ├── blue-deployment.yaml  # Manifest for the blue deployment
+│       │   ├── green-deployment.yaml # Manifest for the green deployment
+│       │   ├── service.yaml          # Service manifest
+│       │   └── active-env.txt        # Tracks the current active environment (blue/green)
+│       ├── Dockerfile              # Dockerfile for the Node.js app
+│       ├── package.json            # Node.js package file
+│       └── server.js               # Node.js application code
+└── jenkins-agent/                  # Directory for custom Jenkins agent image
+    └── Dockerfile.jenkins-agent    # Dockerfile for the Podman-enabled agent
+
+## 5. Setup
+
+Follow these steps to set up the entire CI/CD pipeline and infrastructure.
+
+### 5.1 Terraform Infrastructure
+
+Navigate to the `infra/` directory and apply your Terraform code to provision the VPC, EKS cluster, ECR repositories (nodejs-app and jenkins-agents), and the IAM role/policy/Service Account annotation for Jenkins IRSA.
+
+```bash
+cd infra/
+terraform init
+terraform plan
+terraform apply
+```
+### 5.2 Jenkins Deployment via ArgoCD
+Deploy Jenkins into your EKS cluster using its Helm chart, managed by ArgoCD. Refer to your ArgoCD App of Apps setup or create a dedicated ArgoCD Application for Jenkins.
+
+Ensure your Jenkins Helm chart values.yaml is configured:
+
+To use the jenkins Service Account in the correct namespace (jenkins).
+The agent.image.repository and agent.image.tag fields point to your custom Podman-enabled Jenkins agent image in your jenkins-agents ECR repository (you'll build and push this image in a later step).
+The Service Account is annotated with the IRSA role ARN created by Terraform (your Terraform code should handle this annotation).
+
+### 5.3 ArgoCD Setup
+Ensure ArgoCD is installed in your cluster (if not already done via App of Apps). Access the ArgoCD UI.
+
+### 5.4 Custom Jenkins Agent Image
+Build the custom Jenkins agent Docker image that includes Podman, AWS CLI, and any other necessary tools, using the Dockerfile. (located in misc/ or similar). Push this image to your jenkins-agents ECR repository.
+
+```bash
+# Navigate to the directory containing your Dockerfile
+cd jenkins-agent/
+
+# Build the image (replace <your-registry> and <tag>)
+docker build -t 965202785849.dkr.ecr.us-east-1.amazonaws.com/jenkins-agents:1.0.0-podman-npm -f .
+
+# Authenticate to your jenkins-agents ECR repository
+aws ecr get-login-password --region <your-region> | docker login --username AWS --password-stdin [965202785849.dkr.ecr.us-east-1.amazonaws.com/jenkins-agents](https://965202785849.dkr.ecr.us-east-1.amazonaws.com/jenkins-agents)
+
+# Push the image
+docker push 965202785849.dkr.ecr.us-east-1.amazonaws.com/jenkins-agents:1.0.0-podman-npm
+Important: Ensure the <your-registry>/jenkins-inbound-podman:<tag> exactly matches the agent.image.repository and agent.image.tag configured in your Jenkins Helm chart values.yaml. Sync ArgoCD for the Jenkins application if you changed the image reference.
+```
