@@ -49,7 +49,6 @@ The setup involves the following key components:
 * **Kubernetes Manifests:** Define the desired state of the Node.js application (Deployments for blue/green versions, Service) in YAML files stored in Git.
 * **Terraform:** Used to provision the core AWS infrastructure (VPC, EKS cluster, ECR repositories) and configure IRSA.
 
-```mermaid
 graph LR
     User[User] --> Git[Git Repository];
     Git --> Jenkins[Jenkins Pipeline];
