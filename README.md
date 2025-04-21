@@ -160,3 +160,59 @@ This setup implements a Blue/Green strategy where:
 * ArgoCD monitors the `eks-gitops/nodejs-app/k8s/` path in Git and automatically applies the changes to the cluster, including the Service selector update.
 * The `active-env.txt` file is a simple mechanism in the Git repository to track which environment is currently active, allowing the pipeline to determine which deployment file to update and which environment to switch to next.
 
+## 8. How to Run the Demo
+
+Follow these steps to demonstrate the Blue/Green deployment cycle using the pipeline and ArgoCD.
+
+### 8.1 Initial Blue Deployment
+
+To start with a known "blue" state for your demo:
+
+1.  **Prepare for Blue:** Manually edit `eks-gitops/nodejs-app/k8s/blue-deployment.yaml` in your Git repository. Set the `image:` tag to a known blue image in ECR (e.g., `:build-1`) and the `DEPLOYMENT_VERSION` env var `value:` to `"v1"`. Ensure `eks-gitops/nodejs-app/k8s/service.yaml` has `selector: { app: nodejs-app, env: blue }`. Ensure `eks-gitops/nodejs-app/k8s/active-env.txt` contains `blue`.
+2.  **Commit Initial State:** Commit these files (`blue-deployment.yaml`, `service.yaml`, `active-env.txt`) to your Git repository and push.
+3.  **Observe in ArgoCD:** Go to the ArgoCD UI. Your `nodejs-app` Application should sync the initial state, creating the blue deployment and service pointing to it.
+4.  **Verify Blue:** Access your application URL. It should show the **blue page**.
+
+### 8.2 Release Green Deployment
+
+Now, trigger a new release to deploy the "green" version and switch traffic.
+
+1.  **Trigger Jenkins:** Go to Jenkins and trigger your pipeline job ("Build Now").
+2.  **Pipeline Runs:** The pipeline will build a new image (e.g., `:build-2`), push it, update `green-deployment.yaml` with `:build-2` and `DEPLOYMENT_VERSION: v2`, update `service.yaml` selector to `env: green`, and update `active-env.txt` to `green`. These changes are committed and pushed to Git.
+3.  **ArgoCD Syncs:** ArgoCD detects the changes in Git. It will sync:
+    * The updated `green-deployment.yaml` (deploying the new green pods).
+    * The updated `service.yaml` (changing the selector to `env: green`, instantly switching traffic to green).
+    * The updated `active-env.txt`.
+4.  **Verify Green:** Access your application URL. It should now show the **green page**. Both blue and green deployments will likely be running concurrently for a period, but traffic goes to green.
+
+### 8.3 Demonstrate Rollback (Optional)
+
+To demonstrate rolling back to the previous blue version:
+
+1.  **Revert Manifests in Git:** You can use `git revert` or manually edit `service.yaml` and `active-env.txt` in your repository to switch the `env` selector back to `blue`. Also, ensure `blue-deployment.yaml` has the desired image tag for the rollback version if it was changed.
+2.  **Commit Rollback:** Commit these changes and push to Git.
+3.  **ArgoCD Syncs Rollback:** ArgoCD detects the changes and syncs, switching the Service selector back to `env: blue`.
+4.  **Verify Rollback:** Access your application URL. It should switch back to the **blue page**.
+
+Alternatively, you could build a "rollback" stage into your Jenkins pipeline that performs the necessary `sed`/git commands to switch the service back to blue.
+
+## 9. Future Improvements
+
+Consider these potential enhancements to your setup:
+
+* **Argo Rollouts:** For a more advanced Blue/Green or Canary strategy with features like automated analysis, traffic splitting, and easier rollback managed directly by a Kubernetes controller, integrate with Argo Rollouts. This would involve converting your Deployments to Rollouts and configuring the strategy in the Rollout spec.
+* **Automated Testing:** Add pipeline stages to perform automated tests on the newly deployed (but inactive) green environment before switching traffic.
+* **Manifest Templating:** Use Kustomize or Helm to manage your Kubernetes manifests, reducing duplication between blue/green deployment files and allowing easier parameterization of the image tag and version.
+* **Pipeline Optimization:** Refine the pipeline stages, potentially combining some steps or using shared libraries.
+* **Rootless Podman:** Configure the Jenkins agent to run Podman rootless for enhanced security.
+
+## 10. Troubleshooting
+
+Here are some common issues and troubleshooting tips:
+
+* **`command not found`:** Ensure Podman, AWS CLI, and any other tools are installed on your custom Jenkins agent image and the Helm chart is configured to use that image.
+* **SSH Issues (Host Key, Permissions):** Verify SSH host key scanning in the pipeline, correct Git repository URL (SSH), and correct SSH credential in Jenkins.
+* **ECR Authentication (`unauthorized`):** Check Jenkins IRSA setup, ensure the Service Account is correctly annotated with the IAM role ARN, and the IAM role has permissions to push/pull from ECR. Verify the `aws ecr get-login-password | podman login ...` command is correct and executed by a user with IRSA permissions.
+* **ArgoCD OutOfSync:** Check ArgoCD logs for sync errors. Ensure the repoURL, targetRevision, and path in the ArgoCD Application are correct. Verify the cluster and namespace details are correct.
+* **Blue/Green Not Switching:** Check the `service.yaml` selector labels and ensure they match the labels on your blue/green deployment pods (`env: blue` or `env: green`). Verify the pipeline is correctly updating the `service.yaml` selector in Git. Check ArgoCD Application logs for blue/green specific errors or events.
+* **Podman Build/Mount Issues:** If encountering `fuse-overlayfs` or mounting errors, ensure the agent has necessary privileges (`privileged: true` for rootful, or proper rootless setup) and required kernel modules/capabilities.
