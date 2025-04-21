@@ -62,22 +62,19 @@ The setup involves the following key components:
 ## 4. Repository Structure
 
 Your Git repository is structured to contain the application code, Kubernetes manifests, Terraform code, and `Jenkinsfile`.
-.
-├── Jenkinsfile                     # Jenkins Pipeline definition
-├── terraform/                      # Terraform code for infrastructure
-│   └── ...                         # VPC, EKS, ECRs, IRSA setup
-├── eks-gitops/
-│   └── nodejs-app/
-│       ├── k8s/                    # Kubernetes manifest files for Node.js app
-│       │   ├── blue-deployment.yaml  # Manifest for the blue deployment
-│       │   ├── green-deployment.yaml # Manifest for the green deployment
-│       │   ├── service.yaml          # Service manifest
-│       │   └── active-env.txt        # Tracks the current active environment (blue/green)
-│       ├── Dockerfile              # Dockerfile for the Node.js app
-│       ├── package.json            # Node.js package file
-│       └── server.js               # Node.js application code
-└── jenkins-agent/                  # Directory for custom Jenkins agent image
-    └── Dockerfile.jenkins-agent    # Dockerfile for the Podman-enabled agent
+└── jenkins-argo-eks/
+    ├── eks-gitops/
+    │   └── nodejs-app/
+    │       ├── k8s/
+    │       ├── Dockerfile
+    │       ├── package.json
+    │       └── server.js
+    ├── infra/
+    │   ├── ecr_repo.tf
+    │   └── eks_cluster.tf
+    ├── jenkins-agent/
+    │   └── Dockerfile
+    └── misc
 
 ## 5. Setup
 
