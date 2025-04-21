@@ -74,50 +74,6 @@ pipeline {
                 }
             }
         }
-        // stage('Update Manifest') {
-        //     steps {
-        //         dir('eks-gitops/nodejs-app/k8s') {
-        //             sshagent([env.GIT_CREDENTIAL_ID]) {
-        //                 sh """
-        //                     git remote set-url origin ${env.REPO_SSH_URL}
-        //                     sed -i 's|image: ${env.ECR_REGISTRY}:__IMAGE_TAG__|image: ${env.ECR_REGISTRY}:${env.VERSION}|' deployment.yaml
-        //                     sed -i "/name: DEPLOYMENT_VERSION/{n;s/value: \".*\"/value: \"v${env.VERSION}\"/}" deployment.yaml
-        //                     git config user.email 'jenkins@nimaldas.com'
-        //                     git config user.name 'NimalDas'
-        //                     git add deployment.yaml
-        //                     git commit -m 'Update deployment to version ${env.VERSION} [ci skip]'
-        //                     git push origin main
-        //                 """
-        //             }
-        //         }
-        //     }
-        // }
-        // stage('Update Manifest') {
-        //     steps {
-        //         dir('eks-gitops/nodejs-app/k8s') {
-        //             sshagent([env.GIT_CREDENTIAL_ID]) {
-        //                 sh """
-        //                     git remote set-url origin ${env.REPO_SSH_URL}
-        //                     # Read current active environment from file
-        //                     ACTIVE_ENV=\$(cat active-env.txt || echo "blue")
-        //                     NEW_ENV=\${ACTIVE_ENV} == "blue" ? "green" : "blue"
-        //                     # Update the inactive deployment's image and version
-        //                     sed -i "s|image: ${ECR_REGISTRY}:.*|image: ${ECR_REGISTRY}:${VERSION}|" nodejs-app-\${NEW_ENV}-deployment.yaml
-        //                     sed -i "s|value: \"v.*\"|value: \"v${VERSION}\"|" nodejs-app-\${NEW_ENV}-deployment.yaml
-        //                     # Switch service to new environment
-        //                     sed -i "s|env: .*|env: \${NEW_ENV}|" service.yaml
-        //                     # Update active environment file
-        //                     echo \${NEW_ENV} > active-env.txt
-        //                     git config user.email 'jenkins@nimaldas.com'
-        //                     git config user.name 'NimalDas'
-        //                     git add nodejs-app-\${NEW_ENV}-deployment.yaml service.yaml active-env.txt
-        //                     git commit -m 'Switch to ${NEW_ENV} deployment with version ${VERSION}'
-        //                     git push origin main
-        //                 """
-        //             }
-        //         }
-        //     }
-        // }
         stage('Update Manifest') {
             steps {
                 dir('eks-gitops/nodejs-app/k8s') {
