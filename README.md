@@ -62,6 +62,7 @@ The setup involves the following key components:
 ## 4. Repository Structure
 
 Your Git repository is structured to contain the application code, Kubernetes manifests, Terraform code, and `Jenkinsfile`.
+
 └── jenkins-argo-eks/
     ├── eks-gitops/
     │   └── nodejs-app/
