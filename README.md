@@ -95,13 +95,14 @@ terraform plan
 terraform apply
 ```
 ### 5.2 Jenkins Deployment via ArgoCD
+
 Deploy Jenkins into your EKS cluster using its Helm chart, managed by ArgoCD. Refer to your ArgoCD App of Apps setup or create a dedicated ArgoCD Application for Jenkins.
 
-Ensure your Jenkins Helm chart values.yaml is configured:
+Ensure your Jenkins Helm chart `values.yaml` is configured:
 
-To use the jenkins Service Account in the correct namespace (jenkins).
-The agent.image.repository and agent.image.tag fields point to your custom Podman-enabled Jenkins agent image in your jenkins-agents ECR repository (you'll build and push this image in a later step).
-The Service Account is annotated with the IRSA role ARN created by Terraform (your Terraform code should handle this annotation).
+* To use the `jenkins` Service Account in the correct namespace (`jenkins`).
+* The `agent.image.repository` and `agent.image.tag` fields point to your custom Podman-enabled Jenkins agent image in your `jenkins-agents` ECR repository (you'll build and push this image in a later step).
+* The Service Account is annotated with the IRSA role ARN created by Terraform (your Terraform code should handle this annotation).
 
 ### 5.3 ArgoCD Setup
 Ensure ArgoCD is installed in your cluster (if not already done via App of Apps). Access the ArgoCD UI.
