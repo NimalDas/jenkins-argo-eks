@@ -49,8 +49,6 @@ The setup involves the following key components:
 * **Kubernetes Manifests:** Define the desired state of the Node.js application (Deployments for blue/green versions, Service) in YAML files stored in Git.
 * **Terraform:** Used to provision the core AWS infrastructure (VPC, EKS cluster, ECR repositories) and configure IRSA.
 
-# Jenkins-Argo-EKS Node.js App Deployment
-
 ## 3. Prerequisites
 
 - An AWS account with appropriate permissions to create VPC, EKS, ECR, IAM resources.
@@ -125,6 +123,18 @@ aws ecr get-login-password --region <your-region> | docker login --username AWS 
 docker push 965202785849.dkr.ecr.us-east-1.amazonaws.com/jenkins-agents:1.0.0-podman-npm
 Important: Ensure the <your-registry>/jenkins-inbound-podman:<tag> exactly matches the agent.image.repository and agent.image.tag configured in your Jenkins Helm chart values.yaml. Sync ArgoCD for the Jenkins application if you changed the image reference.
 ```
+### 5.5 Jenkins Configuration
+
+Configure your Jenkins instance to connect to your Git repository and define the pipeline job.
+
+* **Create Git Credential:** In Jenkins, create a **SSH Username with private key** credential. Use the `jenkins-argo-eks-repo-creds` ID (as used in your Jenkinsfile). Provide the username (`git`) and your SSH private key for accessing your Git repository.
+* **Create Pipeline Job:** Create a new Jenkins Pipeline job. Configure it to pull the `Jenkinsfile` from your Git repository (`main` branch) using the SSH credential.
+
+### 5.6 ArgoCD Application for Node.js App
+
+Create an ArgoCD Application resource to manage the Node.js application deployment using GitOps. This tells ArgoCD where to find the application manifests and how to deploy them.
+
+Create a YAML file (e.g., `argocd-nodejs-app.yaml`) with the Application definition and apply it to your cluster in the namespace where ArgoCD is installed.
 
 ## 6. CI/CD Pipeline (Jenkinsfile)
 
