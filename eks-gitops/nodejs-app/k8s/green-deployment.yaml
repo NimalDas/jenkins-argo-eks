@@ -22,12 +22,12 @@ spec:
     spec:
       containers:
       - name: nodejs-app
-        image: 965202785849.dkr.ecr.us-east-1.amazonaws.com/nodejs-app:52
+        image: 965202785849.dkr.ecr.us-east-1.amazonaws.com/nodejs-app:54
         ports:
         - containerPort: 3000
         env:
         - name: DEPLOYMENT_VERSION
-          value: "v52"
+          value: "v54"
         - name: DEPLOYMENT_ENV
           value: "green"          
         livenessProbe:
