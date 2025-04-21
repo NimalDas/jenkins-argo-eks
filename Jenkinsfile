@@ -96,7 +96,7 @@ pipeline {
                                 echo ${newEnv} > active-env.txt
                                 git config user.email 'jenkins@nimaldas.com'
                                 git config user.name 'NimalDas'
-                                git add ${newEnvFile} 
+                                git add ${newEnvFile} service.yaml active-env.txt
                                 git commit -m 'Switch to ${newEnv} deployment with version ${VERSION}'
                                 git push origin main
                             """
