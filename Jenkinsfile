@@ -88,10 +88,12 @@ pipeline {
                                 echo ${VERSION}
                                 sed -i "s|image: ${ECR_REGISTRY}:.*|image: ${ECR_REGISTRY}:${VERSION}|" ${newEnvFile}
                                 sed -i '/name: DEPLOYMENT_VERSION/{n;s|value: "v[^"]*"|value: "v'"${VERSION}"'"|}' ${newEnvFile}
+                                
                                 # Switch service to new environment
-                                # sed -i "s|env: .*|env: ${newEnv}|" service.yaml
+                                sed -i "s|env: .*|env: ${newEnv}|" service.yaml
+                                
                                 # Update active environment file
-                                # echo ${newEnv} > active-env.txt
+                                echo ${newEnv} > active-env.txt
                                 git config user.email 'jenkins@nimaldas.com'
                                 git config user.name 'NimalDas'
                                 git add ${newEnvFile} 
@@ -103,32 +105,32 @@ pipeline {
                 }
             }
         }
-        stage('Switch traffic') {
-            when {
-                expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
-            }
-            steps {
-                script {
-                    input 'Switch traffic to new version? (Validate new deployment first)'
-                    dir('eks-gitops/nodejs-app/k8s') {
-                        sshagent([env.GIT_CREDENTIAL_ID]) {
-                            def activeEnv = sh(script: "cat active-env.txt || echo 'blue'", returnStdout: true).trim()
-                            def newEnv = (activeEnv == 'blue') ? 'green' : 'blue'
-                            sh """
-                                git remote set-url origin ${env.REPO_SSH_URL}
-                                sed -i "s|env: .*|env: ${newEnv}|" service.yaml
-                                echo ${newEnv} > active-env.txt
-                                git config user.email 'jenkins@nimaldas.com'
-                                git config user.name 'NimalDas'
-                                git add service.yaml active-env.txt
-                                git commit -m 'Switch traffic to ${newEnv} with version ${VERSION}'
-                                git push origin main
-                            """
-                        }
-                    }
-                }
-            }
-        }        
+        // stage('Switch traffic') {
+        //     when {
+        //         expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
+        //     }
+        //     steps {
+        //         script {
+        //             input 'Switch traffic to new version? (Validate new deployment first)'
+        //             dir('eks-gitops/nodejs-app/k8s') {
+        //                 sshagent([env.GIT_CREDENTIAL_ID]) {
+        //                     def activeEnv = sh(script: "cat active-env.txt || echo 'blue'", returnStdout: true).trim()
+        //                     def newEnv = (activeEnv == 'blue') ? 'green' : 'blue'
+        //                     sh """
+        //                         git remote set-url origin ${env.REPO_SSH_URL}
+        //                         sed -i "s|env: .*|env: ${newEnv}|" service.yaml
+        //                         echo ${newEnv} > active-env.txt
+        //                         git config user.email 'jenkins@nimaldas.com'
+        //                         git config user.name 'NimalDas'
+        //                         git add service.yaml active-env.txt
+        //                         git commit -m 'Switch traffic to ${newEnv} with version ${VERSION}'
+        //                         git push origin main
+        //                     """
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }        
     }
     post {
         always {
