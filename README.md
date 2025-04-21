@@ -89,8 +89,17 @@ Ensure your Jenkins Helm chart `values.yaml` is configured:
 * The `agent.image.repository` and `agent.image.tag` fields point to your custom Podman-enabled Jenkins agent image in your `jenkins-agents` ECR repository (you'll build and push this image in a later step).
 * The Service Account is annotated with the IRSA role ARN created by Terraform (your Terraform code should handle this annotation).
 
-### 5.3 ArgoCD Setup
-Ensure ArgoCD is installed in your cluster (if not already done via App of Apps). Access the ArgoCD UI.
+### 5.5 ArgoCD App of Apps Pattern
+
+Ensure ArgoCD is installed and accessible in your cluster.
+
+This setup utilizes the App of Apps pattern to manage all applications (including potentially Jenkins itself, and definitely your Node.js app) declaratively within ArgoCD.
+
+A root ArgoCD Application monitors a Git repository (often this same repository) for other ArgoCD Application YAML files. When changes are detected in these child Application files, the root App automatically creates or updates those Applications in ArgoCD.
+
+This centralizes the management of your deployed applications in one place within Git.
+
+![app-of-apps](images/app-of-apps.png)
 
 ### 5.4 Custom Jenkins Agent Image
 Build the custom Jenkins agent Docker image that includes Podman, AWS CLI, and any other necessary tools, using the Dockerfile. (located in misc/ or similar). Push this image to your jenkins-agents ECR repository.
@@ -170,6 +179,9 @@ Now, trigger a new release to deploy the "green" version and switch traffic.
     * The updated `service.yaml` (changing the selector to `env: green`, instantly switching traffic to green).
     * The updated `active-env.txt`.
 4.  **Verify Green:** Access your application URL. It should now show the **green page**. Both blue and green deployments will likely be running concurrently for a period, but traffic goes to green.
+5. **Manage:** Manage nodejs application via ArgoCD
+
+![blue-green](images/blue-green.png)
 
 ### 8.3 Demonstrate Rollback (Optional)
 
