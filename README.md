@@ -55,7 +55,7 @@ graph LR
     Git --> Jenkins[Jenkins Pipeline];
     Jenkins --> Podman[Podman Build];
     Podman --> ECR[AWS ECR];
-    Jenkins --> Git; %% Pipeline updates manifests in Git
+    Jenkins --> Git;
     Git --> ArgoCD[ArgoCD];
     ArgoCD --> EKS[AWS EKS Cluster];
     ECR --> EKS; %% EKS pulls images from ECR
